@@ -122,13 +122,13 @@
                 z-index: 9999999;
             }
             #xBut {
-                background-color: rgb(204, 204, 204);
+                background-color: rgb(0, 0, 0);
                 position: absolute;
                 font-size: 15px;
                 font-weight: 500;
-                color: black;
-                top: 5px;  /* position the top  edge of the element at the middle of the parent */
-                left: 250px; /* position the left edge of the element at the middle of the parent */
+                color: white;
+                top: 0px;  /* position the top  edge of the element at the middle of the parent */
+                right: 0px; /* position the left edge of the element at the middle of the parent */
             }
 
             #walkNote {
@@ -1420,8 +1420,8 @@ window.addEventListener("keydown", function (evt) { // arrow key left right up d
     </script>
         <!-- swiper -->
         <div id="walkNote" class="fade-out">
-            <p>1. Tap the screen to use the touchpad. (Esc to exit)</p>
-            <p>2. Use your arrow keys to move around</p>
+            <p>1. Tap the screen to activate movement.(Press Esc to exit)</p>
+            <p>2. Use your arrow keys and touchpad to move/look around</p>
             <p>3. Use the spacebar or enter key to interact with objects</p>
             <p>Tap the "i" in the top right for further instruction</p>
             <button id="xBut" type="button" onclick="hideDialog()">X</button>
@@ -1436,15 +1436,6 @@ window.addEventListener("keydown", function (evt) { // arrow key left right up d
                     </model-viewer>
                     <img id="qr" src="/images/QR-test.png">
                     <h1 id="qr-text">Scan To View in AR</h1>
-                <div class="swiper-slide">Slide 2</div>
-                <div class="swiper-slide">Slide 3</div>
-                <div class="swiper-slide">Slide 4</div>
-                <div class="swiper-slide">Slide 5</div>
-                <div class="swiper-slide">Slide 6</div>
-                <div class="swiper-slide">Slide 7</div>
-                <div class="swiper-slide">Slide 8</div>
-                <div class="swiper-slide">Slide 9</div>
-                <div class="swiper-slide">Slide 10</div>
                 </div>
                 <!-- Add Pagination -->
                 <div class="swiper-pagination"></div>
