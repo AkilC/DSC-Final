@@ -256,7 +256,8 @@
         var sceneToRender = null;
         var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); };
         var createScene = function () {
-    var scene = new BABYLON.Scene(engine);
+    var scene = new BABYLON.Scene(engine, {useGeometryIdsMap: true, useClonedMeshhMap: true, useMaterialMeshMap: true});
+
     engine.displayLoadingUI();
 
 
@@ -1280,6 +1281,17 @@ var desc7Mat = new BABYLON.StandardMaterial("desc7", scene);
 
         hl.addMesh(artByJoe, new BABYLON.Color3(.6, .8, 1));
 
+
+    //Optimization
+    BABYLON.SceneOptimizer.OptimizeAsync(scene, BABYLON.SceneOptimizerOptions.HighDegradationAllowed(),
+    function() {
+    // On success
+    }, function() {
+    // FPS target not reached
+    });
+    scene.blockfreeActiveMeshesAndRenderingGroups = true;
+    scene.blockfreeActiveMeshesAndRenderingGroups = false;
+    scene.blockMaterialDirtyMechanism = true;
 
     /* New Input Management for Camera
     __________________________________*/

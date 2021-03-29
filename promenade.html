@@ -242,14 +242,10 @@ var sceneToRender = null;
 //BABYLON.Database.IDBStorageEnabled = true;
 var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); };
 var createScene = function () {
-var scene = new BABYLON.Scene(engine);
+var scene = new BABYLON.Scene(engine, {useGeometryIdsMap: true, useClonedMeshhMap: true, useMaterialMeshMap: true});
 engine.displayLoadingUI();
 
-
-
-
-//scene.debugLayer.show({embedMode: true, handleResize: true, enableClose: true, enablePopup: true, overlay: true});
-scene.clearColor = new BABYLON.Color3(0.3, 0.6, 0.902);
+//Layer.show({embedMode: true, handleResize: true, enableClose: true, enablePopup: true, overlay: true});
 
 var light = new BABYLON.HemisphericLight("Light", new BABYLON.Vector3(0,1,0), scene);
 light.intensity = 0.8;
@@ -260,7 +256,7 @@ scene.fogColor = new BABYLON.Color3(0.9, 0.9, 0.85);
 
 var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
-const sceneBox = BABYLON.MeshBuilder.CreateBox("scenebox", {height: 300, width: 200, depth: 210});
+var sceneBox = BABYLON.MeshBuilder.CreateBox("scenebox", {height: 300, width: 200, depth: 210});
 sceneBox.visibility = 0;
 sceneBox.flipFaces(true);
 sceneBox.position = new BABYLON.Vector3(0, 150, -20);
@@ -292,7 +288,7 @@ camera.angularSpeed = 0.03;
 camera.angle = Math.PI/2;
 camera.direction = new BABYLON.Vector3(Math.cos(camera.angle), 0, Math.sin(camera.angle));
 
-var nullObj = new BABYLON.TransformNode("master");
+var nullObj = new BABYLON.AbstractMesh("master");
 
 BABYLON.SceneLoader.Append("/models/store-box2.glb", "", scene, function (scene) {
 var root = scene.getNodeByName('__root__');
@@ -369,57 +365,15 @@ var zvalue2 = 0;
             newBuildingRO.position = new BABYLON.Vector3(xvalue3-=60,8,-191.2);
             newBuildingLO.position = new BABYLON.Vector3(xvalue4+=60,8,-191.2);
         }
-    var blocks = [nullObj];
-    var block2 = nullObj.clone("master2");
-    //var block3 = nullObj.clone("master3");
-    //var block4 = nullObj.clone("master4");
-    nullObj.position = new BABYLON.Vector3(0,0, -200);
-    block2.position = new BABYLON.Vector3(0,0, -700);
-    //block3.position = new BABYLON.Vector3(0,0, -1200);
-    //block4.position = new BABYLON.Vector3(0,0, -1700);
-    blocks.push(block2);
-    //blocks.push(block3);
-    //blocks.push(block4);
-        var side2 = scene.getMeshByName("collidePlane");
-        var side1 = scene.getMeshByName("collide");
-        var fashionEnter = side1.clone("fashionEnter");
-        fashionEnter.visibility = 0;
-        fashionEnter.scaling = new BABYLON.Vector3(0.1, 1, 0.1);
-        fashionEnter.position = new BABYLON.Vector3(40, 0.501, 169.5);
 
-        var positions = sceneBox.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-        var numVertices = positions.length/3
-        for( var i=0; i<numVertices; i++) {
-            positions[i]
-        }
+        nullObj.position = new BABYLON.Vector3(0,0, -200);
 
-        var zUpper = 53.5;
-        var xUpper = 59.495;
-        var xLower = -59.495;
-        var zUpper = -113.495;
+});
 
-
-        //camera.onCollide = function(collidedMesh) {
-        //if(collidedMesh.uniqueId === sceneBox.uniqueId && collisionDetected == false) {
-            //set the new camera position
-            //collisionDetected = true;
-            //nullObj.position = new BABYLON.Vector3(0,0, -500);
-            //block2.position = new BABYLON.Vector3(0,0, 0);
-            //side2.position.z = -560;
-            //side1.position.z = 440;
-        //}
-        //else{
-            //collisionDetected = false;
-           // caution.isVisible = false;
-        //}
-    //}
-
-
-
-    var zHuman1 = 440;
+var zHuman1 = 440;
     var zHuman2 = 470;
     var zHuman3 = 250;
-    for(var i = 0; i<4; i++){
+    for(var i = 0; i<1; i++){
         BABYLON.SceneLoader.Append("https://cdn.glitch.com/70dbad3b-1f56-4b3f-96b7-05e0de0f2754%2Fman-phone2.glb?v=1610869258964", "", scene, function (scene) {
             var root = scene.getNodeByName('__root__');
             root.name = "man" + i;
@@ -458,8 +412,6 @@ var zvalue2 = 0;
             woman2.scaling = new BABYLON.Vector3(3, 3, 3);
         });
     }
-
-});
 
 var boxCloud = BABYLON.Mesh.CreateSphere("boxCloud", 50, 1500, scene);
 boxCloud.position = new BABYLON.Vector3(0, 0, 12);
@@ -1066,6 +1018,18 @@ window.addEventListener("keydown", function (evt) { // arrow key left right up d
                    }
                }
 });		
+
+//Optimization
+BABYLON.SceneOptimizer.OptimizeAsync(scene, BABYLON.SceneOptimizerOptions.HighDegradationAllowed(),
+function() {
+   // On success
+}, function() {
+   // FPS target not reached
+});
+scene.blockfreeActiveMeshesAndRenderingGroups = true;
+scene.blockfreeActiveMeshesAndRenderingGroups = false;
+scene.blockMaterialDirtyMechanism = true;
+
 
     
    /* New Input Management for Camera
