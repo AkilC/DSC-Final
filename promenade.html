@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" http-equiv="Content-Type" content="text/html, charset=utf-8" />
+
+        <title>Market</title>
+
+        <!-- Babylon.js -->
+        <script src="https://code.jquery.com/pep/0.4.2/pep.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+        <script src="https://cdn.babylonjs.com/ammo.js"></script>
+        <script src="https://cdn.babylonjs.com/cannon.js"></script>
+        <script src="https://cdn.babylonjs.com/Oimo.js"></script>
+        <script src="https://cdn.babylonjs.com/earcut.min.js"></script>
+        <script src="https://cdn.babylonjs.com/babylon.js"></script>
+        <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+        <script src="https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+        <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+        <script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/6.4.5/swiper-bundle.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/6.4.5/swiper-bundle.css">
+
+        <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+        <script nomodule src="https://unpkg.com/@google/model-viewer/dist/model-viewer-legacy.js"></script>
+
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                font-family: Montserrat;
+                font-weight: 500;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+                outline: none;
+                position: absolute;
+            }
+
+            #gallery-wrapper {
+                position: block;
+                opacity: 0;
+            }
+
+            #gallery-box{
+                position: absolute;
+                width: 100vw;
+                height: 100vh;
+                z-index: 2000;
+                background-color: #000000;
+                opacity: 50%;
+                top: 50%;  /* position the top  edge of the element at the middle of the parent */
+                left: 50%; /* position the left edge of the element at the middle of the parent */
+                transform: translate(-50%, -50%); /* center */
+            }
+
+            .swiper-container {
+                position: absolute;
+                width: 60vw;
+                height: 60vh;
+                top: 50%;  /* position the top  edge of the element at the middle of the parent */
+                left: 50%; /* position the left edge of the element at the middle of the parent */
+                transform: translate(-50%, -50%); /* center */
+                z-index: 3000;
+            }
+
+                .swiper-slide {
+                text-align: center;
+                font-size: 18px;
+                background: #fff;
+
+                /* Center slide text vertically */
+                display: -webkit-box;
+                display: -ms-flexbox;
+                display: -webkit-flex;
+                display: flex;
+                -webkit-box-pack: center;
+                -ms-flex-pack: center;
+                -webkit-justify-content: center;
+                justify-content: center;
+                -webkit-box-align: center;
+                -ms-flex-align: center;
+                -webkit-align-items: center;
+                align-items: center;
+            }
+
+            #model {
+                position: absolute;
+                background-color: #fff;
+                width: 100%;
+                height: 100%;
+                top: 50%;  /* position the top  edge of the element at the middle of the parent */
+                left: 50%; /* position the left edge of the element at the middle of the parent */
+                transform: translate(-50%, -50%); /* center */
+                z-index: 3000;
+            }
+            #qr {
+                position: absolute;
+                width: 80px;
+                height: 80px;
+                top: 25px;
+                right: 20px;
+                z-index: 9999999;
+            }
+
+            #qr-text {
+                position: absolute;
+                font-family: Arial, Helvetica, sans-serif;
+                font-weight: bold;
+                font-size: 12px;
+                top: 0;
+                right: 5px;
+                z-index: 9999999;
+            }
+            #xBut {
+                background-color: rgb(204, 204, 204);
+                position: absolute;
+                font-size: 15px;
+                font-weight: 500;
+                color: black;
+                top: 5px;  /* position the top  edge of the element at the middle of the parent */
+                left: 250px; /* position the left edge of the element at the middle of the parent */
+            }
+
+            #walkNote {
+                background-color: white;
+                height: 18vh;
+                position: absolute;
+                border-radius: 4px;
+                width: 16vw;
+                font-family: Montserrat;
+                font-size: 15px;
+                font-weight: 500;
+                color: black;
+                top: 80vh;  /* position the top  edge of the element at the middle of the parent */
+                left: 90vw; /* position the left edge of the element at the middle of the parent */
+                transform: translate(-50%, -50%);
+            }
+            p {
+                text-align: center;
+                margin: 4px 4px;
+            }
+            .fade-out {
+            animation: fadeOut ease 20s;
+
+            }
+            @keyframes fadeOut {
+            0% {
+                opacity:1;
+            }
+            80% {
+                opacity:1;
+            }
+            100% {
+                opacity:0;
+                display: none;
+            }
+            }
+
+        </style>
+    </head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        BABYLON.DefaultLoadingScreen.prototype.displayLoadingUI = function () {
+    if (this._loadingDiv) {
+        // Do not add a loading screen if there is already one
+        return;
+    }
+    this._loadingDiv = document.createElement("div");
+    this._loadingDiv.id = "babylonjsLoadingDiv";
+    this._loadingDiv.style.opacity = "0";
+    this._loadingDiv.style.transition = "opacity 1.5s ease";
+    this._loadingDiv.style.pointerEvents = "none";
+    
+    // Loading text
+    this._loadingTextDiv = document.createElement("div");
+    this._loadingTextDiv.style.position = "absolute";
+    //this._loadingTextDiv.style.left = "0";
+    this._loadingTextDiv.style.top = "50%";
+    //this._loadingTextDiv.style.marginTop = "80px";
+    this._loadingTextDiv.style.width = "100%";
+    this._loadingTextDiv.style.height = "20px";
+    this._loadingTextDiv.style.fontFamily = "Montserrat";
+    this._loadingTextDiv.style.fontSize = "40px";
+    this._loadingTextDiv.style.fontWeight = "700";
+    this._loadingTextDiv.style.color = "white";
+    this._loadingTextDiv.style.textAlign = "center";
+    this._loadingTextDiv.innerHTML = "We are currently loading your scene...";
+
+    this._loadingTextDiv2 = document.createElement("div2");
+    this._loadingTextDiv2.style.position = "absolute";
+    this._loadingTextDiv2.style.left = "43%";
+    this._loadingTextDiv2.style.top = "95%";
+    //this._loadingTextDiv.style.marginTop = "80px";
+    this._loadingTextDiv2.style.width = "100%";
+    this._loadingTextDiv2.style.height = "10px";
+    this._loadingTextDiv2.style.fontFamily = "Montserrat";
+    this._loadingTextDiv2.style.fontSize = "15px";
+    this._loadingTextDiv2.style.fontWeight = "700";
+    this._loadingTextDiv2.style.color = "white";
+    this._loadingTextDiv2.style.textAlign = "center";
+    this._loadingTextDiv2.innerHTML = "Howard Google DSC";
+    // Generating keyframes
+    var style = document.createElement('style');
+    style.type = 'text/css';
+    var keyFrames = "@-webkit-keyframes spin1 { 0% { -webkit-transform: rotate(0deg);}\n                    100% { -webkit-transform: rotate(360deg);}\n                }                @keyframes spin1 {                    0% { transform: rotate(0deg);}\n                    100% { transform: rotate(360deg);}\n                }";
+    style.innerHTML = keyFrames;
+    document.getElementsByTagName('head')[0].appendChild(style);
+    // Loading img
+    var imgBack = new Image();
+    imgBack.src = "/images/gif1.gif";
+    imgBack.style.position = "absolute";
+    imgBack.style.width = "100%";
+    var myVideo = document.getElementById("myVideo");
+    // imgBack.style.marginLeft = "-60px";
+    // imgBack.style.marginTop = "-60px";
+    
+    this._loadingDiv.appendChild(imgBack);
+    this._loadingDiv.appendChild(this._loadingTextDiv);
+    this._loadingDiv.appendChild(this._loadingTextDiv2);
+    this._resizeLoadingUI();
+    window.addEventListener("resize", this._resizeLoadingUI);
+    this._loadingDiv.style.backgroundColor = this._loadingDivBackgroundColor;
+    document.body.appendChild(this._loadingDiv);
+    this._loadingDiv.style.opacity = "1";
+};
+        var canvas = document.getElementById("renderCanvas");
+
+var engine = null;
+var scene = null;
+var sceneToRender = null;
+//BABYLON.Database.IDBStorageEnabled = true;
+var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true }); };
+var createScene = function () {
+var scene = new BABYLON.Scene(engine);
+engine.displayLoadingUI();
+
+
+
+
+//scene.debugLayer.show({embedMode: true, handleResize: true, enableClose: true, enablePopup: true, overlay: true});
+scene.clearColor = new BABYLON.Color3(0.3, 0.6, 0.902);
+
+var light = new BABYLON.HemisphericLight("Light", new BABYLON.Vector3(0,1,0), scene);
+light.intensity = 0.8;
+
+scene.fogMode = BABYLON.Scene.FOGMODE_EXP;
+scene.fogDensity = 0.00013;
+scene.fogColor = new BABYLON.Color3(0.9, 0.9, 0.85);
+
+var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+const sceneBox = BABYLON.MeshBuilder.CreateBox("scenebox", {height: 300, width: 200, depth: 210});
+sceneBox.visibility = 0;
+sceneBox.flipFaces(true);
+sceneBox.position = new BABYLON.Vector3(0, 150, -20);
+sceneBox.scaling = new BABYLON.Vector3(0.6, 1, 0.8);
+sceneBox.checkCollisions = true;
+
+const buildingBox = BABYLON.MeshBuilder.CreateBox("buildbox", {height: 50, width: 150, depth: 150});
+buildingBox.position = new BABYLON.Vector3(115, 25, -30);
+buildingBox.scaling.z = 0.8;
+buildingBox.rotation = new BABYLON.Vector3(0, -0.01,0);;
+buildingBox.visibility = 0;
+buildingBox.checkCollisions = true;
+
+var caution = new BABYLON.GUI.Image("caution", "/images/caution.png");
+caution.width = "410px";
+caution.height = "229px";
+caution.isVisible = false;
+//enterDialog.top = "220vh";
+advancedTexture.addControl(caution); 
+
+
+//Add the camera, to be shown as a cone and surrounding collision volume
+var camera = new BABYLON.UniversalCamera("MyCamera", new BABYLON.Vector3(0, 5, 53), scene);
+camera.minZ = 0.01;
+
+camera.attachControl(canvas, true);
+camera.speed = 0.03;
+camera.angularSpeed = 0.03;
+camera.angle = Math.PI/2;
+camera.direction = new BABYLON.Vector3(Math.cos(camera.angle), 0, Math.sin(camera.angle));
+
+var nullObj = new BABYLON.TransformNode("master");
+
+BABYLON.SceneLoader.Append("/models/store-box2.glb", "", scene, function (scene) {
+var root = scene.getNodeByName('__root__');
+root.name = "build";
+root.parent = nullObj;
+
+var zvalue = 0;
+var zvalue2 = 0;
+        var root = scene.getNodeByName("build");
+        var building = scene.getMeshByName("store.box_primitive0");
+        var name = scene.getMeshByName("store.box_primitive1");
+        building.checkCollisions = true;
+        building.scaling = new BABYLON.Vector3(16,16,16);
+        name.scaling = new BABYLON.Vector3(16,16,16);
+        root.position = new BABYLON.Vector3(55,8,zvalue);
+        building.rotation.y = 1.571;
+        name.rotation.y = 1.571;
+        root.parent = nullObj;
+        
+        var buildings = [root];
+        for (var i = 1; i < 3; i++) {
+            var newBuildingL = root.clone("root" + i);
+            var newBuildingR = root.clone("root" + i);
+            newBuildingR.rotation = new BABYLON.Vector3(0,0,0);
+
+            buildings.push(newBuildingL);
+            buildings.push(newBuildingR);
+
+            newBuildingL.position = new BABYLON.Vector3(55,8,zvalue-=50);
+            newBuildingR.position = new BABYLON.Vector3(-55,8,zvalue2-=50);
+        }
+        var buildingOneR = root.clone("root" + i);
+        buildingOneR.rotation = new BABYLON.Vector3(0,0,0);
+        buildings.push(buildingOneR);
+        buildingOneR.position = new BABYLON.Vector3(-55,8,0);
+
+        //var buildings2 = [root];
+        zvalue3 = -160;
+        zvalue4 = -160;
+        for (var i = 1; i < 3; i++) {
+            var newBuildingL = root.clone("root" + i);
+            var newBuildingR = root.clone("root" + i);
+            newBuildingR.rotation = new BABYLON.Vector3(0,0,0);
+
+            buildings.push(newBuildingL);
+            buildings.push(newBuildingR);
+
+            newBuildingL.position = new BABYLON.Vector3(55,8,zvalue3-=50);
+            newBuildingR.position = new BABYLON.Vector3(-55,8,zvalue4-=50);
+        }
+
+        //var buildingsR = [root];
+        xvalue = -55;
+        xvalue2 = 55;
+        xvalue3 = -55;
+        xvalue4 = 55
+        for (var i = 1; i < 2; i++) {
+            var newBuildingL = root.clone("root" + i);
+            var newBuildingR = root.clone("root" + i);
+            var newBuildingRO = root.clone("root" + i);
+            var newBuildingLO = root.clone("root" + i);
+            newBuildingL.rotation = new BABYLON.Vector3(0,1.571,0);
+            newBuildingR.rotation = new BABYLON.Vector3(0,1.571,0);
+            newBuildingLO.rotation = new BABYLON.Vector3(0,-1.571,0);
+            newBuildingRO.rotation = new BABYLON.Vector3(0,-1.571,0);
+
+            buildings.push(newBuildingL);
+            buildings.push(newBuildingR);
+            buildings.push(newBuildingLO);
+            buildings.push(newBuildingRO);
+
+            newBuildingR.position = new BABYLON.Vector3(xvalue-=60,8,-118.83);
+            newBuildingL.position = new BABYLON.Vector3(xvalue2+=60,8,-118.83);
+            newBuildingRO.position = new BABYLON.Vector3(xvalue3-=60,8,-191.2);
+            newBuildingLO.position = new BABYLON.Vector3(xvalue4+=60,8,-191.2);
+        }
+    var blocks = [nullObj];
+    var block2 = nullObj.clone("master2");
+    //var block3 = nullObj.clone("master3");
+    //var block4 = nullObj.clone("master4");
+    nullObj.position = new BABYLON.Vector3(0,0, -200);
+    block2.position = new BABYLON.Vector3(0,0, -700);
+    //block3.position = new BABYLON.Vector3(0,0, -1200);
+    //block4.position = new BABYLON.Vector3(0,0, -1700);
+    blocks.push(block2);
+    //blocks.push(block3);
+    //blocks.push(block4);
+        var side2 = scene.getMeshByName("collidePlane");
+        var side1 = scene.getMeshByName("collide");
+        var fashionEnter = side1.clone("fashionEnter");
+        fashionEnter.visibility = 0;
+        fashionEnter.scaling = new BABYLON.Vector3(0.1, 1, 0.1);
+        fashionEnter.position = new BABYLON.Vector3(40, 0.501, 169.5);
+
+        var positions = sceneBox.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+        var numVertices = positions.length/3
+        for( var i=0; i<numVertices; i++) {
+            positions[i]
+        }
+
+        var zUpper = 53.5;
+        var xUpper = 59.495;
+        var xLower = -59.495;
+        var zUpper = -113.495;
+
+
+        //camera.onCollide = function(collidedMesh) {
+        //if(collidedMesh.uniqueId === sceneBox.uniqueId && collisionDetected == false) {
+            //set the new camera position
+            //collisionDetected = true;
+            //nullObj.position = new BABYLON.Vector3(0,0, -500);
+            //block2.position = new BABYLON.Vector3(0,0, 0);
+            //side2.position.z = -560;
+            //side1.position.z = 440;
+        //}
+        //else{
+            //collisionDetected = false;
+           // caution.isVisible = false;
+        //}
+    //}
+
+
+
+    var zHuman1 = 440;
+    var zHuman2 = 470;
+    var zHuman3 = 250;
+    for(var i = 0; i<4; i++){
+        BABYLON.SceneLoader.Append("https://cdn.glitch.com/70dbad3b-1f56-4b3f-96b7-05e0de0f2754%2Fman-phone2.glb?v=1610869258964", "", scene, function (scene) {
+            var root = scene.getNodeByName('__root__');
+            root.name = "man" + i;
+            var man1 = scene.getNodeByName("Armature.003");
+            man1.name = "man1node" + i;
+            var man1mesh = scene.getMeshByName("BASE_Low Poly Man_0.001");
+            man1mesh.name = "man1mesh" + i;
+            man1mesh.alwaysSelectAsActiveMesh = true;
+            man1.position = new BABYLON.Vector3(-30,0.5,zHuman1-=500);
+            man1.scaling = new BABYLON.Vector3(.018, .018, .018);
+            //root.parent = nullObj;
+        });
+        BABYLON.SceneLoader.Append("https://cdn.glitch.com/70dbad3b-1f56-4b3f-96b7-05e0de0f2754%2Fwoman-phone3.glb?v=1610871559039", "", scene, function (scene) {
+            var root = scene.getNodeByName('__root__');
+            root.name = "woman" + i;
+            //root.parent = nullObj;
+            var woman1 = scene.getNodeByName("Armature.004");
+            woman1.name = "woman1node" + i;
+            var woman1mesh = scene.getMeshByName("Cube");
+            woman1mesh.name = "woman1mesh";
+            woman1mesh.alwaysSelectAsActiveMesh = true;
+            woman1.position = new BABYLON.Vector3(30,.6,zHuman2-=500);
+            woman1.scaling = new BABYLON.Vector3(3, 3, 3);
+        });
+        BABYLON.SceneLoader.Append("https://cdn.glitch.com/70dbad3b-1f56-4b3f-96b7-05e0de0f2754%2Fwoman-idle.glb?v=1610873146006", "", scene, function (scene) {
+            var root = scene.getNodeByName('__root__');
+            root.name = "woman2" + i;
+            //root.parent = nullObj;
+            var woman2 = scene.getNodeByName("Armature");
+            woman2.name = "woman2node" + i;
+            var woman2mesh = scene.getMeshByName("Cube.001");
+            woman2mesh.name = "woman1mesh" + i;
+            woman2mesh.alwaysSelectAsActiveMesh = true;
+            woman2.rotation = new BABYLON.Vector3(1.55,1.5,0);
+            woman2.position = new BABYLON.Vector3(-30,.5,zHuman3-=500);
+            woman2.scaling = new BABYLON.Vector3(3, 3, 3);
+        });
+    }
+
+});
+
+var boxCloud = BABYLON.Mesh.CreateSphere("boxCloud", 50, 1500, scene);
+boxCloud.position = new BABYLON.Vector3(0, 0, 12);
+var cloudMaterial = new BABYLON.StandardMaterial("cloudMat", scene);
+var cloudProcText = new BABYLON.CloudProceduralTexture("cloud", 128, scene);
+cloudMaterial.emissiveTexture = cloudProcText;
+cloudMaterial.backFaceCulling = false;
+cloudMaterial.emissiveTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+boxCloud.material = cloudMaterial;
+
+boxCloud.rotation.x = 120;
+
+light.excludedMeshes.push(boxCloud);
+
+
+    //scene.executeWhenReady(function () {
+    var galleryBuilding = BABYLON.SceneLoader.Append("/models/NewGallery3.3Ext.glb", "", scene, function (scene) {
+        var root1 = scene.getNodeByName("__root__");
+        root1.name = "gallery";
+        root1.position = new BABYLON.Vector3(-90,1,-28);
+
+        var wallsOuter = scene.getMeshByName("Cube.005");
+        wallsOuter.position = new BABYLON.Vector3(-0.46, 14, -0.89);
+        wallsOuter.scaling.y = -13.8;
+
+        var doorlight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(-50,90,-40), new BABYLON.Vector3(0, -1, 0), Math.PI / 2, 13, scene);
+        doorlight.diffuse = new BABYLON.Color3(1, 1, 0);
+        doorlight.specular = new BABYLON.Color3(0, 0, 1);
+        var light3 = new BABYLON.PointLight("Light", new BABYLON.Vector3(-100,30,-30), scene);
+        light3.intensity = 15;
+
+        root1.getChildMeshes().forEach(m => {
+            //m.checkCollisions = true;
+            light3.includedOnlyMeshes.push(m);
+        });
+
+        var floor = scene.getMeshByName("floor");
+
+        floor.material.roughness = 1;
+        floor.material.metallic = 0.75;
+        floor.material.emissiveColor = new BABYLON.Color3(0, 0, 0);
+        floor.material.usePhysicalLightFalloff = false;
+
+        const glass2 = new BABYLON.PBRMetallicRoughnessMaterial('glass', scene)
+        glass2.baseColor = new BABYLON.Color3(0.78, 0.82, 0.85)
+        glass2.emissiveColor = new BABYLON.Color3(0.2, 0.2, 0.2)
+        glass2.metallic = 1.0
+        glass2.roughness = 0.2
+        glass2.alpha = 0.2
+
+        var doors = scene.getMeshByName("GlassDoors");
+        doors.material = glass2;
+
+        var roof = scene.getMeshByName("celling");
+        var walls = scene.getMeshByName("walls_exterior");
+
+
+        //walls.material.emissiveColor = new BABYLON.Color3(0.02, 0.02, 0.02);
+        walls.material.albedoColor = new BABYLON.Color3(0.3, 0.3, 0.3);
+
+        var signBox = scene.getMeshByName("signBox");
+        var signMaterial = new BABYLON.StandardMaterial("sign", scene);
+        signMaterial.emissiveColor = new BABYLON.Color3(0, 0, 0);
+        signMaterial.albedoColor = new BABYLON.Color3(0, 0, 0);
+        signBox.material.albedoColor = new BABYLON.Color3(0, 0, 0);
+
+        var gallerySign = scene.getMeshByName("FarEast");
+        gallerySign.material.emissiveColor = new BABYLON.Color3(1,1,1);
+
+        var bulb1 = scene.getMeshByName("bulb1");
+        bulb1.material.emissiveColor = new BABYLON.Vector3(1,1, .5)
+
+
+        light3.excludedMeshes.push(boxCloud);
+
+        var collide = scene.getMeshByName("walls_exteriorCollide");
+        collide.flipFaces(true);
+        collide.checkCollisions = true;
+        collide.visibility = 0;
+
+
+        //light.excludedMeshes.push(floor);
+        //light2.excludedMeshes.push(boxCloud);
+    });
+//});
+
+
+var fashionBuilding = BABYLON.SceneLoader.Append("/models/FashionStore4.2.glb", "", scene, function (scene) {
+    var root = scene.getNodeByName("__root__");
+    root.name = "fashion";
+
+    var light2 = new BABYLON.PointLight("Light", new BABYLON.Vector3(0,35,0), scene);
+    light2.intensity = 15;
+    var beloved = scene.getMeshByName("Curve.016");
+
+    root.getChildMeshes().forEach(m => {
+        if (m != beloved) {
+            light.excludedMeshes.push(m);
+            light2.includedOnlyMeshes.push(m);
+        }
+    });
+
+    root.position = new BABYLON.Vector3(100,1,-30);
+    root.rotation = new BABYLON.Vector3(0,-1.58,0);
+
+    var glassdoor1 = scene.getMeshByName("Glass");
+    var glassdoor2 = scene.getMeshByName("Glass.002");
+    var windows = scene.getMeshByName("Plane.002");
+
+    var exteriorFashion = scene.getMeshByName("Cube.001");
+    exteriorFashion.material.backFaceCulling = true;
+
+    var exteriorFashion2 = scene.getMeshByName("Cube.005");
+    //exteriorFashion.flipFaces = true;
+    exteriorFashion.material.backFaceCulling = true;
+    //var exteriorFashion2 = exteriorFashion.clone("buildingColor");
+    //exteriorFashion2.position.z = -1;
+
+    var exteriorMat = new BABYLON.StandardMaterial("exteriorMat", scene);
+    exteriorMat.diffuseColor = new BABYLON.Color3(0,0,0);
+    exteriorMat.backFaceCulling = false;
+    exteriorMat.emissiveColor = new BABYLON.Color3(0,0,0);
+    //exteriorFashion2.scaling = new BABYLON.Vector3(59, -14.5, 58.5);
+    //exteriorFashion2.material = exteriorMat;
+
+
+    const glass = new BABYLON.PBRMetallicRoughnessMaterial('glass', scene)
+    glass.baseColor = new BABYLON.Color3(0.78, 0.82, 0.85)
+    glass.emissiveColor = new BABYLON.Color3(0.2, 0.2, 0.4)
+    glass.metallic = 1.0
+    glass.roughness = 0.2
+    glass.alpha = 0.2
+
+    glassdoor1.material = glass;
+    glassdoor2.material = glass;
+    windows.material = glass;
+
+    var hatbox = scene.getMeshByName("hatBox");
+    hatbox.material = glass;
+
+    var hatbox2 = scene.getMeshByName("hatBox2");
+    hatbox2.material = glass;
+
+    var walls = scene.getMeshByName("Cube.001");
+    walls.material.emissiveColor = new BABYLON.Vector3(.3, 0.3, 0.3);
+
+    var wallsOuter = scene.getMeshByName("Cube.005");
+    wallsOuter.checkCollisions = true;
+
+    var planeOpts = {
+        height: 7, 
+        width: 10, 
+        sideOrientation: BABYLON.Mesh.DOUBLESIDE
+    };
+    var videoPlane = BABYLON.MeshBuilder.CreatePlane("plane", planeOpts, scene);
+    var vidPos = (new BABYLON.Vector3(154.58, 19.9, -31.76));
+    videoPlane.position = vidPos;
+    var videoMat = new BABYLON.StandardMaterial("m", scene);
+    var videoTexture = new BABYLON.VideoTexture("vidtex","/images/B__Dove.mp4", scene);
+    videoMat.diffuseTexture = videoTexture;
+    videoMat.roughness = 1;
+    videoMat.emissiveColor = new BABYLON.Color3.White();
+    videoPlane.material = videoMat;
+    videoPlane.scaling = new BABYLON.Vector3(1.342, 1.138, 1.0);
+    videoPlane.rotation = new BABYLON.Vector3(0, 1.58, 0);
+    scene.onPointerObservable.add(function(evt){
+    if(evt.pickInfo.pickedMesh === videoPlane){
+                //console.log("picked");
+                    if(videoTexture.video.paused)
+                        videoTexture.video.play();
+                    else
+                        videoTexture.video.pause();
+                    console.log(videoTexture.video.paused?"paused":"playing");
+            }
+    }, BABYLON.PointerEventTypes.POINTERPICK);
+
+    light2.excludedMeshes.push(videoPlane);
+
+    var statue = scene.getMeshByName("statueBlock");
+    statue.name = "statue";
+
+    var floorMat = scene.getMaterialByName("Material.002");
+
+    var hatStand1 = scene.getMeshByName("hatStand1");
+    var hatStand2 = scene.getMeshByName("hatStand2");
+    var cloRack1 = scene.getMeshByName("CloRack1");
+    var cloRack2 = scene.getMeshByName("CloRack2");
+    var tvBack = scene.getMeshByName("TV-Back");
+    var dove = scene.getMeshByName("Dove");
+    var statueStand = scene.getMeshByName("hatStand2.001");
+    statueStand.visibility = 0;
+
+    floorMat.reflectionTexture = new BABYLON.MirrorTexture("mirror", {ratio: 0.5}, scene, true);
+    floorMat.reflectionTexture.mirrorPlane = new BABYLON.Plane(0, -2.0, 0, -2.0);
+    //floorMat.reflectionTexture.renderList = [statue, hatStand1, hatStand2, cloRack1, cloRack2];
+    floorMat.reflectionTexture.level = 1.0;
+    floorMat.reflectionTexture.adaptiveBlurKernel = 50;
+    floorMat.emissiveColor = new BABYLON.Color3(0.05, 0.05, 0.05);
+
+    var glowParent = new BABYLON.TransformNode("master");
+
+    var purple1 = scene.getMeshByName("Purple1");
+    var purple2 = scene.getMeshByName("Purple.001");
+    var purple3 = scene.getMeshByName("Purple2");
+    var purple4 = scene.getMeshByName("Purple2.001");
+    var purple5 = scene.getMeshByName("Purple3");
+    var purple6 = scene.getMeshByName("Purple3.001");
+    var purple7 = scene.getMeshByName("Purple4");
+    var purple8 = scene.getMeshByName("Purple4.001");
+
+
+    var gl = new BABYLON.GlowLayer("glow", scene);
+    gl.intensity = 0.7;
+    gl.addExcludedMesh(videoPlane);
+    gl.addExcludedMesh(hatbox);
+    gl.addExcludedMesh(hatbox2);
+    //gl.addExcludedMesh(ground);
+
+    var glowMat = scene.getMaterialByName("Material");
+    var whiteGlow = new BABYLON.Color3(.7, .7, .7);
+    var purpleGlow = new BABYLON.Color3(.28, .25, .35);
+    glowMat.emissiveColor = whiteGlow;
+
+    var glowAnim = new BABYLON.Animation("glowAnim", "material.emissiveColor", 30, BABYLON.Animation.ANIMATIONTYPE_COLOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+
+    const glowkeyFrames = []; 
+
+    glowkeyFrames.push({
+        frame: 0,
+        value: whiteGlow
+    });
+
+    glowkeyFrames.push({
+        frame: 100,
+        value: whiteGlow
+    });
+
+    glowkeyFrames.push({
+        frame: 200,
+        value: purpleGlow
+    });
+    glowkeyFrames.push({
+        frame: 400,
+        value: purpleGlow
+    });
+    glowkeyFrames.push({
+        frame: 500,
+        value: whiteGlow
+    });
+
+    glowAnim.setKeys(glowkeyFrames);
+    purple1.animations.push(glowAnim);
+
+    scene.beginAnimation(purple1, 0, 500, true);
+    light2.excludedMeshes.push(boxCloud);
+
+
+    //mirror.position = new BABYLON.Vector3(0, 1, 0);
+
+    //light.excludedMeshes.push(cloRack2, cloRack1, statue, dove);
+    //light2.includedOnlyMeshes.push(cloRack2, cloRack1, statue, dove);
+
+    // Shadow
+    //shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
+    //shadowGenerator.getShadowMap().renderList.push(statue);
+    //shadowGenerator.setDarkness(0.5);
+    //shadowGenerator.usePoissonSampling = true;
+    //shadowGenerator.bias = 0;
+    //statue.receiveShadows = true;
+
+    var shirt1 = scene.getMeshByName("Shirt1");
+    var shirt2 = scene.getMeshByName("Shirt2");
+
+    var shirt4 = scene.getMeshByName("Shirt4");
+
+    var shirt5 = scene.getMeshByName("Shirt5");
+
+    var shirt6 = scene.getMeshByName("Shirt6");
+
+    var belovedSign = scene.getMeshByName("Curve.016");
+    belovedSign.material.emissiveColor = new BABYLON.Color3(1,1,1);
+
+    
+
+
+    //light.excludedMeshes.push(cloRack2, cloRack1, statue, dove, shirt1, shirt2, shirt3, shirt4, shirt5, shirt6);
+    //light2.includedOnlyMeshes.push(cloRack2, cloRack1, statue, dove, shirt1, shirt2, shirt3, shirt4, shirt5, shirt6);
+    //floorMat.reflectionTexture.renderList = [statue, hatStand1, hatStand2, cloRack1, cloRack2, shirt1, shirt2, shirt3, shirt4, shirt5, shirt6];
+});
+
+var isLocked = false;
+
+// On click event, request pointer lock
+scene.onPointerDown = function(){
+if(!document.pointerLockElement){
+    engine.enterPointerlock();
+}
+else {
+    engine.exitPointerlock()
+}
+
+}
+
+
+
+
+camera.rotation.y += Math.PI;
+
+
+/* Set Up Scenery
+_____________________*/
+
+//Ground
+const diffuseTexture = new BABYLON.Texture("/textures/street/Asphalt_005_COLOR.jpg", scene);
+const detailTexture = new BABYLON.Texture("/textures/street/Asphalt_005_DISP2.jpg", scene);;
+const bumpTexture = new BABYLON.Texture("/textures/street/Asphalt_005_NORM.jpg", scene);
+//const diffuseTexture = new BABYLON.Texture("temp/marble_albedo.png", scene);
+//const detailTexture = new BABYLON.Texture("temp/marble_detailmap.png", scene);;
+//const bumpTexture = new BABYLON.Texture("temp/marble_normal.png", scene);
+
+
+var matStd = new BABYLON.StandardMaterial("mat", scene);
+
+matStd.detailMap.isEnabled = true;
+matStd.detailMap.texture = detailTexture;
+matStd.detailMap.texture.uScale = 1500;
+matStd.detailMap.texture.vScale = 1500;
+
+
+matStd.diffuseTexture = diffuseTexture;
+matStd.diffuseTexture.level = 1.7;
+matStd.detailMap.isEnabled = true;
+matStd.detailMap.diffuseBlendLevel = 2;
+
+matStd.detailMap.bumpLevel = 1;
+matStd.bumpTexture = bumpTexture;
+matStd.bumpTexture.level = 1;
+matStd.detailMap.roughnessBlendLevel = 1;
+
+matStd.diffuseTexture.uScale = 1000;
+matStd.diffuseTexture.vScale = 1000;
+
+var ground = BABYLON.MeshBuilder.CreateGround("groundMain", {width: 10000, height: 10000}, scene);
+ground.material = matStd;
+
+var lowerGround = ground.clone("lowerGround");
+lowerGround.scaling.x = 4;
+lowerGround.scaling.z = 4;
+lowerGround.position.y = -16;
+lowerGround.material = ground.material.clone("lowerMat");
+lowerGround.material.diffuseColor = new BABYLON.Color3(0, 1, 0);
+
+var sidewalk1 = BABYLON.MeshBuilder.CreateBox("collide", {height: .2, width: 150, depth: 170});
+sidewalk1.position = new BABYLON.Vector3(100,.5,180);
+sidewalk1.material = new BABYLON.StandardMaterial("sidewalk", scene);
+sidewalk1.material.diffuseColor = new BABYLON.Color3(1, 1, 1);
+sidewalk1.material.diffuseTexture = new BABYLON.Texture("/images/concreteTexture1.png");
+sidewalk1.material.diffuseTexture.level = 1.8;
+sidewalk1.material.diffuseTexture.uScale = 5;
+sidewalk1.material.diffuseTexture.vScale = 5;
+sidewalk1.checkCollisions = true;
+
+
+
+var sidewalk2 = BABYLON.MeshBuilder.CreateBox("box", {height: .2, width: 150, depth: 170});
+sidewalk2.position = new BABYLON.Vector3(-100,.5,180);
+sidewalk2.material = sidewalk1.material;
+sidewalk2.checkCollisions = true;
+
+var sidewalk3 = BABYLON.MeshBuilder.CreateBox("box", {height: .2, width: 150, depth: 170});
+sidewalk3.position = new BABYLON.Vector3(100,.5,-10);
+sidewalk3.material = sidewalk1.material;
+sidewalk3.checkCollisions = true;
+
+var sidewalk4 = BABYLON.MeshBuilder.CreateBox("box", {height: .2, width: 150, depth: 170});
+sidewalk4.position = new BABYLON.Vector3(-100,.5,-10);
+sidewalk4.material = sidewalk1.material
+sidewalk4.checkCollisions = true;
+
+sidewalk1.parent = nullObj;
+sidewalk2.parent = nullObj;
+sidewalk3.parent = nullObj;
+sidewalk4.parent = nullObj;
+
+var nav = BABYLON.MeshBuilder.CreateBox("nav", {height: .02, width: 3, depth: 170});
+nav.position = new BABYLON.Vector3(23.8, 0.09, -14);
+nav.rotation = new BABYLON.Vector3(0, 0.00014, .352556);
+nav.checkCollisions = true;
+nav.visibility = 0;
+
+var nav2 = BABYLON.MeshBuilder.CreateBox("nav2", {height: .02, width: 3, depth: 170});
+nav2.position = new BABYLON.Vector3(-23.7, 0.09, -14);
+nav2.rotation = new BABYLON.Vector3(0, 3.1433, .352556);
+nav2.checkCollisions = true;
+nav2.visibility = 0;
+
+
+
+
+
+/* End Create Scenery */
+
+//Gravity and Collisions Enabled
+scene.gravity = new BABYLON.Vector3(0, -0.9, 0);
+scene.collisionsEnabled = true;
+
+camera.checkCollisions = true;
+camera.applyGravity = true;
+
+ground.checkCollisions = true;
+lowerGround.checkCollisions = true;
+
+camera.ellipsoid = new BABYLON.Vector3(0.5, 3, 0.5);
+camera.ellipsoidOffset = new BABYLON.Vector3(0, 1, 0);
+
+
+
+
+
+// GUI
+
+
+
+var enterDialog = new BABYLON.GUI.Image("Enter", "/images/ToEnter.png");
+enterDialog.width = "330px";
+enterDialog.height = "98px";
+enterDialog.isVisible = false;
+enterDialog.top = canvas.height/2.5;
+advancedTexture.addControl(enterDialog);
+
+
+
+var faceUV = new Array(6);
+
+var enterMat = new BABYLON.StandardMaterial("enterMat", scene);
+enterMat.diffuseColor = new BABYLON.Color3(.9,.9,.9);
+var enterTexture = new BABYLON.Texture("/images/enterSign-11.jpg", scene);
+enterMat.diffuseTexture = enterTexture;
+
+//set each uv face to blank
+for (var i = 0; i < 6; i++) {
+    faceUV[i] = new BABYLON.Vector4(0, 0, 0, 0);
+}
+
+var options = {
+    width: 1.3,
+    height: 0.1,
+    depth: 1.3,
+    faceUV: faceUV
+};
+
+//make face 4 equal to our artwork texture
+faceUV[4] = new BABYLON.Vector4(0,0,1,1);
+var enter = BABYLON.MeshBuilder.CreateBox('canvas', options, scene);
+enter.material = enterMat;
+enter.position = new BABYLON.Vector3(40.38, 6.28, -30.34);
+enter.rotation = new BABYLON.Vector3(0, -3.16, -1.58);
+
+
+
+//click to toggle swipe div
+var actionManager = new BABYLON.ActionManager(scene);
+enter.actionManager = actionManager;
+
+var hl = new BABYLON.HighlightLayer("hl1", scene);
+
+actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, function(ev){
+        hl.addMesh(enter, BABYLON.Color3.White());
+      }));
+      //if hover is over remove highlight of the mesh
+actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, function(ev){
+        hl.removeMesh(enter);
+      }));
+
+actionManager.registerAction(
+    new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, 
+    function(event){
+        var pickedMesh = event.meshUnderPointer; 
+
+        window.location.href = "/videoFashion.html";
+    })
+)
+
+
+
+var faceUV2 = new Array(6);
+
+//set each uv face to blank
+for (var i = 0; i < 6; i++) {
+    faceUV[i] = new BABYLON.Vector4(0, 0, 0, 0);
+}
+
+var options = {
+    width: 1.3,
+    height: 0.1,
+    depth: 1.3,
+    faceUV: faceUV2
+};
+
+//make face 4 equal to our artwork texture
+faceUV2[5] = new BABYLON.Vector4(0,0,1,1);
+var enter2 = BABYLON.MeshBuilder.CreateBox('canvas', options, scene);
+enter2.material = enterMat;
+enter2.position = new BABYLON.Vector3(-43.37, 6.28, -30.47);
+enter2.rotation = new BABYLON.Vector3(0, 0, -1.571);
+
+
+var button = BABYLON.GUI.Button.CreateImageOnlyButton("but", "/images/i-icon-w.png");
+        button.width = "35px";
+        button.height = "35px";
+        button.color = "transparent";
+        button.image.detectPointerOnOpaqueOnly = true;
+        button.children[0].detectPointerOnOpaqueOnly = true;
+        button.top = "-430px"
+        button.left = "48%"
+        //button.background = "rgba(0.5, 0.5, 0.5, 0.6)";
+        //button.alpha = 0;
+        advancedTexture.addControl(button);
+
+        var homebutton = BABYLON.GUI.Button.CreateImageOnlyButton("homebut", "/images/home.png");
+        homebutton.width = "35px";
+        homebutton.height = "35px";
+        homebutton.color = "transparent";
+        homebutton.image.detectPointerOnOpaqueOnly = true;
+        homebutton.children[0].detectPointerOnOpaqueOnly = true;
+        homebutton.top = "-430px"
+        homebutton.left = "45%"
+        //homebutton.background = "rgba(0.5, 0.5, 0.5, 0.6)";
+        //homebutton.alpha = 0;
+        advancedTexture.addControl(homebutton);
+        homebutton.onPointerDownObservable.add(function() {
+            window.location.href = "/index.html";
+        });
+        
+
+        var controls = BABYLON.GUI.Button.CreateImageOnlyButton("homebut", "/images/controls-new.png");
+        controls.width = "1000px";
+        controls.height = "585px";
+
+        advancedTexture.addControl(controls);
+
+        controls.isVisible = false;
+
+        var showGUI = false;
+
+        controls.onPointerDownObservable.add(function() {
+            controls.isVisible = false;
+            showGUI = false;
+        });
+
+        button.onPointerDownObservable.add(function() {
+            if(!showGUI){
+                controls.isVisible = true;
+                showGUI = true;
+                
+            } else if(showGUI) {
+                showGUI = false;
+                controls.isVisible = false;
+            }
+    });
+
+
+
+//click to toggle swipe div
+var actionManager2 = new BABYLON.ActionManager(scene);
+enter2.actionManager = actionManager2;
+
+var hl2 = new BABYLON.HighlightLayer("hl1", scene);
+
+actionManager2.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, function(ev){
+        hl2.addMesh(enter2, BABYLON.Color3.White());
+      }));
+      //if hover is over remove highlight of the mesh
+actionManager2.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, function(ev){
+        hl2.removeMesh(enter2);
+      }));
+
+actionManager2.registerAction(
+    new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, 
+    function(event){
+        var pickedMesh = event.meshUnderPointer; 
+
+        window.location.href = "/video.html";
+    })
+)    
+
+var sound = new BABYLON.Sound("music", "/sounds/calmCity.mp3", scene, null, {
+    loop: true, 
+    spatialSound: true, 
+    maxDistance: 1000,
+    volume: 0.02, 
+});
+
+var soundYes= false;
+
+window.addEventListener("keydown", function (evt) { // arrow key left right up down
+               if (evt.keyCode === 83 || evt.keyCode === 115) {
+                   if(!soundYes){
+                       sound.play();
+                       soundYes = true;
+                   } else if(soundYes) {
+                        sound.pause();
+                        soundYes = false;
+                   }
+               }
+});		
+
+    
+   /* New Input Management for Camera
+    __________________________________*/
+
+    //First remove the default management.
+    camera.inputs.removeByType("FreeCameraKeyboardMoveInput");
+    camera.inputs.removeByType("FreeCameraMouseInput");
+
+    //Key Input Manager To Use Keys to Move Forward and BackWard and Look to the Left or Right
+    var FreeCameraKeyboardWalkInput = function () {
+        this._keys = [];
+        this.keysUp = [38];
+        this.keysDown = [40];
+        this.keysLeft = [37];
+        this.keysRight = [39];
+        this.keysSpace = [32];
+        this.keysEnter = [13];
+        this.keysS = [83];
+    }
+
+    //Add attachment controls
+    FreeCameraKeyboardWalkInput.prototype.attachControl = function (noPreventDefault) {
+            var _this = this;
+            var engine = this.camera.getEngine();
+            var element = engine.getInputElement();
+            if (!this._onKeyDown) {
+                element.tabIndex = 1;
+                this._onKeyDown = function (evt) {
+                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysEnter.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysS.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysSpace.indexOf(evt.keyCode) !== -1 ) {
+                        var index = _this._keys.indexOf(evt.keyCode);
+                        if (index === -1) {
+                            _this._keys.push(evt.keyCode);
+                        }
+                        if (!noPreventDefault) {
+                            evt.preventDefault();
+                        }
+                    }
+                };
+                this._onKeyUp = function (evt) {
+                    if (_this.keysUp.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysDown.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysLeft.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysRight.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysEnter.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysS.indexOf(evt.keyCode) !== -1 ||
+                        _this.keysSpace.indexOf(evt.keyCode) !== -1 ) {
+                        var index = _this._keys.indexOf(evt.keyCode);
+                        if (index >= 0) {
+                            _this._keys.splice(index, 1);
+                        }
+                        if (!noPreventDefault) {
+                            evt.preventDefault();
+                        }
+                    }
+                };
+                element.addEventListener("keydown", this._onKeyDown, false);
+                element.addEventListener("keyup", this._onKeyUp, false);
+            }
+        };
+
+
+        //Add detachment controls
+        FreeCameraKeyboardWalkInput.prototype.detachControl = function () {
+            var engine = this.camera.getEngine();
+            var element = engine.getInputElement();
+            if (this._onKeyDown) {
+                element.removeEventListener("keydown", this._onKeyDown);
+                element.removeEventListener("keyup", this._onKeyUp);
+                BABYLON.Tools.UnregisterTopRootEvents([
+                    { name: "blur", handler: this._onLostFocus }
+                ]);
+                this._keys = [];
+                this._onKeyDown = null;
+                this._onKeyUp = null;
+            }
+        };
+
+        //Keys movement control by checking inputs
+        FreeCameraKeyboardWalkInput.prototype.checkInputs = function () {
+            if (this._onKeyDown) {
+                var camera = this.camera;
+
+                var camZ = camera.position.z;
+                var camX =camera.position.x;
+
+                var zUpper = 63.2;
+                var xUpper = 59.3;
+                var xLower = -59;
+                var zLower = -103;
+                if(camZ >= zUpper || camZ <= zLower || camX >= xUpper || camX <= xLower) {
+                    caution.isVisible = true;
+                    console.log("bound");
+                } else {
+                    caution.isVisible = false;
+                }
+
+                var fashionEnterX = 39.49;
+                var fashionEnterZ = -30.15;
+                var artEnterX = -40.35;
+                var artEnterZ = -30.37;
+                var isNearFashion = false;
+                var isNearArt = false;
+                        if(Math.abs(fashionEnterX - camX) <= 9 && Math.abs(fashionEnterZ - camZ) <= 9){
+                            //enter store
+                            //window.location.href = "/videoFashion.html";
+                            enterDialog.isVisible = true;
+                            isNearFashion = true;
+                            console.log("isNear");
+                            hl.addMesh(enter, BABYLON.Color3.White());
+                        } else if(Math.abs(artEnterX - camX) <= 9 && Math.abs(artEnterZ - camZ) <= 9) {
+                            enterDialog.isVisible = true;
+                            isNearArt = true;
+                            console.log("isNear");
+                            hl2.addMesh(enter2, BABYLON.Color3.White());
+                        } else {
+                            enterDialog.isVisible = false;
+                            isNearFashion =false;
+                            isNearArt =false;
+                            hl.removeMesh(enter);
+                            hl2.removeMesh(enter2);
+                        }
+                for (var index = 0; index < this._keys.length; index++) {
+                    var keyCode = this._keys[index];
+                    var speed = camera.speed;
+                    if (this.keysLeft.indexOf(keyCode) !== -1) {
+                        camera.rotation.y -= camera.angularSpeed;
+                        camera.direction.copyFromFloats(0, 0, 0);
+                    }
+                    else if (this.keysUp.indexOf(keyCode) !== -1) {
+                        camera.direction.copyFromFloats(0, 0, speed);
+                    }
+                    else if (this.keysRight.indexOf(keyCode) !== -1) {
+                        camera.rotation.y += camera.angularSpeed;
+                        camera.direction.copyFromFloats(0, 0, 0);
+                    }
+                    else if (this.keysDown.indexOf(keyCode) !== -1) {
+                        camera.direction.copyFromFloats(0, 0, -speed);
+                    } else if ((this.keysSpace.indexOf(keyCode) !== -1 ) || (this.keysEnter.indexOf(keyCode) !== -1 )) {
+                        if(isNearFashion){
+                            //enter store
+                            window.location.href = "/videoFashion.html";
+  
+                        }else if(isNearArt){
+                            window.location.href = "/video.html";
+                        }
+                        //camera.position.y += 1;
+                        camera.direction.copyFromFloats(0, 0, 0);
+                    } else if (this.keysS.indexOf(keyCode) !== -1) {
+                        //sound.play();
+                        camera.direction.copyFromFloats(0, 0, 0);
+                    }
+                    if (camera.getScene().useRightHandedSystem) {
+                        camera.direction.z *= -1;
+                    }
+                    camera.getViewMatrix().invertToRef(camera._cameraTransformMatrix);
+                    BABYLON.Vector3.TransformNormalToRef(camera.direction, camera._cameraTransformMatrix, camera._transformedDirection);
+                    camera.cameraDirection.addInPlace(camera._transformedDirection);
+                    
+                
+                }
+            }
+        };
+
+        //Add the onLostFocus function
+        FreeCameraKeyboardWalkInput.prototype._onLostFocus = function (e) {
+            this._keys = [];
+        };
+
+        //Add the two required functions for the control Name
+        FreeCameraKeyboardWalkInput.prototype.getClassName = function () {
+            return "FreeCameraKeyboardWalkInput";
+        };
+
+        FreeCameraKeyboardWalkInput.prototype.getSimpleName = function () {
+            return "keyboard";
+        };
+
+    //Add the new keys input manager to the camera.
+     camera.inputs.add(new FreeCameraKeyboardWalkInput());
+
+
+
+    //The Mouse Manager to use the mouse (touch) to search around including above and below
+    var FreeCameraSearchInput = function (touchEnabled) {
+        if (touchEnabled === void 0) { touchEnabled = true; }
+        this.touchEnabled = touchEnabled;
+        this.buttons = [0, 1, 2];
+        this.angularSensibility = 2000.0;
+        this.restrictionX = 100;
+        this.restrictionY = 60;
+    }
+
+    //add attachment control which also contains the code to react to the input from the mouse
+    FreeCameraSearchInput.prototype.attachControl = function (noPreventDefault) {
+        var _this = this;
+        var engine = this.camera.getEngine();
+        var element = engine.getInputElement();
+        var angle = {x:0, y:0};
+        if (!this._pointerInput) {
+            this._pointerInput = function (p, s) {
+                var evt = p.event;
+                if (!_this.touchEnabled && evt.pointerType === "touch") {
+                    return;
+                }
+                if (p.type !== BABYLON.PointerEventTypes.POINTERMOVE && _this.buttons.indexOf(evt.button) === -1) {
+                    return;
+                }
+                if (p.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+                    try {
+                        evt.srcElement.setPointerCapture(evt.pointerId);
+                    }
+                    catch (e) {
+                        //Nothing to do with the error. Execution will continue.
+                    }
+                    _this.previousPosition = {
+                        x: evt.clientX,
+                        y: evt.clientY
+                    };
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                        element.focus();
+                    }
+                }
+                else if (p.type === BABYLON.PointerEventTypes.POINTERUP) {
+                    try {
+                        evt.srcElement.releasePointerCapture(evt.pointerId);
+                    }
+                    catch (e) {
+                        //Nothing to do with the error.
+                    }
+                    _this.previousPosition = null;
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                }
+                else if (p.type === BABYLON.PointerEventTypes.POINTERMOVE) {
+                    if (!_this.previousPosition || engine.isPointerLock) {
+                        return;
+                    }
+                    var offsetX = evt.clientX - _this.previousPosition.x;
+                    var offsetY = evt.clientY - _this.previousPosition.y;
+                    angle.x +=offsetX;
+                    angle.y -=offsetY;
+                    if(Math.abs(angle.x) > _this.restrictionX )  {
+                        angle.x -=offsetX;
+                    }
+                    if(Math.abs(angle.y) > _this.restrictionY )  {
+                        angle.y +=offsetY;
+                    }
+                    if (_this.camera.getScene().useRightHandedSystem) {
+                        if(Math.abs(angle.x) < _this.restrictionX )  {
+                            _this.camera.cameraRotation.y -= offsetX / _this.angularSensibility;
+                        }
+                    }
+                    else {
+                        if(Math.abs(angle.x) < _this.restrictionX )  {
+                            _this.camera.cameraRotation.y += offsetX / _this.angularSensibility;
+                        }
+                    }
+                    if(Math.abs(angle.y) < _this.restrictionY )  {
+                        _this.camera.cameraRotation.x += offsetY / _this.angularSensibility;
+                    }
+                    _this.previousPosition = {
+                        x: evt.clientX,
+                        y: evt.clientY
+                    };
+                    if (!noPreventDefault) {
+                        evt.preventDefault();
+                    }
+                }
+            };
+        }
+        this._onSearchMove = function (evt) {
+            if (!engine.isPointerLock) {
+                return;
+            }
+            var offsetX = evt.movementX || evt.mozMovementX || evt.webkitMovementX || evt.msMovementX || 0;
+            var offsetY = evt.movementY || evt.mozMovementY || evt.webkitMovementY || evt.msMovementY || 0;
+            if (_this.camera.getScene().useRightHandedSystem) {
+                _this.camera.cameraRotation.y -= offsetX / _this.angularSensibility;
+            }
+            else {
+                _this.camera.cameraRotation.y += offsetX / _this.angularSensibility;
+            }
+            _this.camera.cameraRotation.x += offsetY / _this.angularSensibility;
+            _this.previousPosition = null;
+            if (!noPreventDefault) {
+                evt.preventDefault();
+            }
+        };
+        this._observer = this.camera.getScene().onPointerObservable.add(this._pointerInput, BABYLON.PointerEventTypes.POINTERDOWN | BABYLON.PointerEventTypes.POINTERUP | BABYLON.PointerEventTypes.POINTERMOVE);
+        element.addEventListener("mousemove", this._onSearchMove, false);
+    };
+
+    //Add detachment control
+    FreeCameraSearchInput.prototype.detachControl = function () {
+        var engine = this.camera.getEngine();
+        var element = engine.getInputElement();
+        if (this._observer && element) {
+            this.camera.getScene().onPointerObservable.remove(this._observer);
+            element.removeEventListener("mousemove", this._onSearchMove);
+            this._observer = null;
+            this._onSearchMove = null;
+            this.previousPosition = null;
+        }
+    };
+
+    //Add the two required functions for names
+    FreeCameraSearchInput.prototype.getClassName = function () {
+        return "FreeCameraSearchInput";
+    };
+
+    FreeCameraSearchInput.prototype.getSimpleName = function () {
+        return "MouseSearchCamera";
+    };
+
+    //Add the new mouse input manager to the camera
+    camera.inputs.add(new FreeCameraSearchInput());
+
+
+
+    return scene;
+}
+    var engine;
+    try {
+    engine = createDefaultEngine();
+    } catch(e) {
+    console.log("the available createEngine function failed. Creating the default engine instead");
+    engine = createDefaultEngine();
+    }
+        if (!engine) throw 'engine should not be null.';
+        scene = createScene();;
+        sceneToRender = scene
+
+        engine.runRenderLoop(function () {
+            if (sceneToRender && sceneToRender.activeCamera) {
+                sceneToRender.render();
+            }
+        });
+
+        // Resize
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+    </script>
+        <!-- swiper -->
+        <div id="walkNote" class="fade-out">
+            <p>1. Tap the screen to use the touchpad. (Esc to exit)</p>
+            <p>2. Use your arrow keys to move around</p>
+            <p>3. Use the spacebar or enter key to interact with objects</p>
+            <p>Tap the "i" in the top right for further instruction</p>
+            <button id="xBut" type="button" onclick="hideDialog()">X</button>
+         </div>
+
+        <div id="gallery-wrapper" class="galWrap">
+        <div id="gallery-box" onload="time()" onclick="hide()"></div>
+            <div class="swiper-container">
+                <div class="swiper-wrapper">
+                <div class="swiper-slide" class="noSwipingClass">Slide 1</div>
+                    <model-viewer id="model" src="/images/cube-test.gltf" ar ar-modes="webxr scene-viewer quick-look" ar-scale="auto" camera-controls alt="test" ios-src="/images/cube-test.usdz">
+                    </model-viewer>
+                    <img id="qr" src="/images/QR-test.png">
+                    <h1 id="qr-text">Scan To View in AR</h1>
+                <div class="swiper-slide">Slide 2</div>
+                <div class="swiper-slide">Slide 3</div>
+                <div class="swiper-slide">Slide 4</div>
+                <div class="swiper-slide">Slide 5</div>
+                <div class="swiper-slide">Slide 6</div>
+                <div class="swiper-slide">Slide 7</div>
+                <div class="swiper-slide">Slide 8</div>
+                <div class="swiper-slide">Slide 9</div>
+                <div class="swiper-slide">Slide 10</div>
+                </div>
+                <!-- Add Pagination -->
+                <div class="swiper-pagination"></div>
+                <!-- Add Arrows -->
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div> 
+        </div>   
+            <!-- Initialize Swiper -->
+            <script>
+                var swiper = new Swiper('.swiper-container', {
+                spaceBetween: 30,
+                centeredSlides: true,
+                allowTouchMove: false,
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+                });
+
+                window.addEventListener("load", function(){
+                var x = document.getElementById("gallery-wrapper");
+                        setTimeout(function() {var x = document.getElementById("gallery-wrapper");x.style.display = "none";}, 1000);
+                })
+
+                window.addEventListener("load", function(){
+                var a = document.getElementById("walkNote");
+                        setTimeout(function() {a.style.display = "none";}, 18000);
+                })
+
+
+                function hide() {
+                    var x = document.getElementById("gallery-wrapper");
+                    var y = document.getElementsByClassName('galWrap');
+
+                    x.style.opacity = "0%";
+                    x.style.display = "none";
+                    
+                }
+                function hideDialog() {
+                    var a = document.getElementById("walkNote");
+                    a.style.display = "none";
+                    
+                }
+            </script>
+        </div>>
+
+</body>
+</html>
