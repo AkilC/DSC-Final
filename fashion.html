@@ -325,7 +325,7 @@
 
 
 
-    var fashionBuilding = await BABYLON.SceneLoader.AppendAsync("/models/FashionStore5.12.glb", "", scene);
+    var fashionBuilding = await BABYLON.SceneLoader.AppendAsync("https://cdn.glitch.com/70dbad3b-1f56-4b3f-96b7-05e0de0f2754%2Ffashionstore5.12.glb?v=1617167913575", "", scene);
     var root2 = scene.getNodeByName("__root__");
         root2.name = "fashion";
         root2.position = new BABYLON.Vector3(0,-.1,0);
@@ -692,7 +692,7 @@
     var zvalue2 = 0;
     var nullObj = new BABYLON.TransformNode("master");
 
-    var extraBuildings = await BABYLON.SceneLoader.AppendAsync("/models/store-box2.glb", "", scene); 
+    var extraBuildings = await BABYLON.SceneLoader.AppendAsync("https://cdn.glitch.com/70dbad3b-1f56-4b3f-96b7-05e0de0f2754%2Fstore-box2.glb?v=1617167818599", "", scene); 
             var root = scene.getNodeByName('__root__');
             root.name = "build";
             var root = scene.getNodeByName("build");
@@ -727,7 +727,7 @@
         nullObj.position = new BABYLON.Vector3(300,0,-100); 
         nullObj.rotation.y = 1.571; 
 
-        var galleryBuilding = await BABYLON.SceneLoader.AppendAsync("/models/NewGallery3.3.glb", "", scene); 
+        var galleryBuilding = await BABYLON.SceneLoader.AppendAsync("https://cdn.glitch.com/70dbad3b-1f56-4b3f-96b7-05e0de0f2754%2Fnewgallery3.3.glb?v=1617167933931", "", scene); 
                 var root1 = scene.getNodeByName("__root__");
                 root1.name = "gallery";
                 root1.position = new BABYLON.Vector3(0, 0,-200);

@@ -297,7 +297,7 @@ camera.direction = new BABYLON.Vector3(Math.cos(camera.angle), 0, Math.sin(camer
 
 var nullObj = new BABYLON.AbstractMesh("master");
 
-BABYLON.SceneLoader.Append("/models/store-box2.glb", "", scene, function (scene) {
+BABYLON.SceneLoader.Append("https://cdn.glitch.com/70dbad3b-1f56-4b3f-96b7-05e0de0f2754%2Fstore-box2.glb?v=1617167818599", "", scene, function (scene) {
 var root = scene.getNodeByName('__root__');
 root.name = "build";
 root.parent = nullObj;
@@ -435,7 +435,7 @@ light.excludedMeshes.push(boxCloud);
 
 
     //scene.executeWhenReady(function () {
-    var galleryBuilding = BABYLON.SceneLoader.Append("/models/NewGallery3.3Ext.glb", "", scene, function (scene) {
+    var galleryBuilding = BABYLON.SceneLoader.Append("https://cdn.glitch.com/70dbad3b-1f56-4b3f-96b7-05e0de0f2754%2Fnewgallery3.3ext.glb?v=1617167955360", "", scene, function (scene) {
         var root1 = scene.getNodeByName("__root__");
         root1.name = "gallery";
         root1.position = new BABYLON.Vector3(-90,1,-28);
@@ -506,7 +506,7 @@ light.excludedMeshes.push(boxCloud);
 //});
 
 
-var fashionBuilding = BABYLON.SceneLoader.Append("/models/FashionStore4.2.glb", "", scene, function (scene) {
+var fashionBuilding = BABYLON.SceneLoader.Append("https://cdn.glitch.com/70dbad3b-1f56-4b3f-96b7-05e0de0f2754%2Ffashionstore4.2.glb?v=1617167926265", "", scene, function (scene) {
     var root = scene.getNodeByName("__root__");
     root.name = "fashion";
 
