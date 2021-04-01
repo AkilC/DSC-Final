@@ -376,48 +376,6 @@ var zvalue2 = 0;
         nullObj.position = new BABYLON.Vector3(0,0, -200);
 });
 
-var zHuman1 = 440;
-    var zHuman2 = 470;
-    var zHuman3 = 250;
-    for(var i = 0; i<1; i++){
-        BABYLON.SceneLoader.Append("https://cdn.glitch.com/70dbad3b-1f56-4b3f-96b7-05e0de0f2754%2Fman-phone2.glb?v=1610869258964", "", scene, function (scene) {
-            var root = scene.getNodeByName('__root__');
-            root.name = "man" + i;
-            var man1 = scene.getNodeByName("Armature.003");
-            man1.name = "man1node" + i;
-            var man1mesh = scene.getMeshByName("BASE_Low Poly Man_0.001");
-            man1mesh.name = "man1mesh" + i;
-            man1mesh.alwaysSelectAsActiveMesh = true;
-            man1.position = new BABYLON.Vector3(-30,0.5,zHuman1-=500);
-            man1.scaling = new BABYLON.Vector3(.018, .018, .018);
-            //root.parent = nullObj;
-        });
-        BABYLON.SceneLoader.Append("https://cdn.glitch.com/70dbad3b-1f56-4b3f-96b7-05e0de0f2754%2Fwoman-phone3.glb?v=1610871559039", "", scene, function (scene) {
-            var root = scene.getNodeByName('__root__');
-            root.name = "woman" + i;
-            //root.parent = nullObj;
-            var woman1 = scene.getNodeByName("Armature.004");
-            woman1.name = "woman1node" + i;
-            var woman1mesh = scene.getMeshByName("Cube");
-            woman1mesh.name = "woman1mesh";
-            woman1mesh.alwaysSelectAsActiveMesh = true;
-            woman1.position = new BABYLON.Vector3(30,.6,zHuman2-=500);
-            woman1.scaling = new BABYLON.Vector3(3, 3, 3);
-        });
-        BABYLON.SceneLoader.Append("https://cdn.glitch.com/70dbad3b-1f56-4b3f-96b7-05e0de0f2754%2Fwoman-idle.glb?v=1610873146006", "", scene, function (scene) {
-            var root = scene.getNodeByName('__root__');
-            root.name = "woman2" + i;
-            //root.parent = nullObj;
-            var woman2 = scene.getNodeByName("Armature");
-            woman2.name = "woman2node" + i;
-            var woman2mesh = scene.getMeshByName("Cube.001");
-            woman2mesh.name = "woman1mesh" + i;
-            woman2mesh.alwaysSelectAsActiveMesh = true;
-            woman2.rotation = new BABYLON.Vector3(1.55,1.5,0);
-            woman2.position = new BABYLON.Vector3(-30,.5,zHuman3-=500);
-            woman2.scaling = new BABYLON.Vector3(3, 3, 3);
-        });
-    }
 
 
 var boxCloud = BABYLON.Mesh.CreateSphere("boxCloud", 50, 1500, scene);
@@ -991,14 +949,13 @@ var button = BABYLON.GUI.Button.CreateImageOnlyButton("but", "/images/i-icon-w.p
 var actionManager2 = new BABYLON.ActionManager(scene);
 enter2.actionManager = actionManager2;
 
-var hl2 = new BABYLON.HighlightLayer("hl1", scene);
 
 actionManager2.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, function(ev){
-        hl2.addMesh(enter2, BABYLON.Color3.White());
+        hl.addMesh(enter2, BABYLON.Color3.White());
       }));
       //if hover is over remove highlight of the mesh
 actionManager2.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, function(ev){
-        hl2.removeMesh(enter2);
+        hl.removeMesh(enter2);
       }));
 
 actionManager2.registerAction(
@@ -1161,13 +1118,13 @@ scene.blockMaterialDirtyMechanism = true;
                             enterDialog.isVisible = true;
                             isNearArt = true;
                             console.log("isNear");
-                            hl2.addMesh(enter2, BABYLON.Color3.White());
+                            hl.addMesh(enter2, BABYLON.Color3.White());
                         } else {
                             enterDialog.isVisible = false;
                             isNearFashion =false;
                             isNearArt =false;
                             hl.removeMesh(enter);
-                            hl2.removeMesh(enter2);
+                            hl.removeMesh(enter2);
                         }
                 for (var index = 0; index < this._keys.length; index++) {
                     var keyCode = this._keys[index];

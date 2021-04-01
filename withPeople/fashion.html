@@ -378,7 +378,6 @@
         var hatbox2 = scene.getMeshByName("hatBox2");
         hatbox2.material = glass;
 
-        characterLight.excludedMeshes.push(hatbox, hatbox2);
 
         var glassdoor1 = scene.getMeshByName("Glass");
         var glassdoor2 = scene.getMeshByName("Glass.002");
@@ -397,6 +396,7 @@
         var wallbound = scene.getMeshByName("Barrier");
         var statueBound = scene.getMeshByName("hatStand2.001");
 
+        characterLight.excludedMeshes.push(hatbox, hatbox2, walls);
         //wallbound.flipFaces(true);
 
         wallbound.visibility = 0;

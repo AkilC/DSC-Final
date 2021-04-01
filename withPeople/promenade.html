@@ -138,7 +138,7 @@
                 height: auto;
                 position: absolute;
                 border-radius: 4px;
-                width: auto;
+                width: 16vw;
                 font-family: Montserrat;
                 font-size: 15px;
                 font-weight: 500;
@@ -634,7 +634,7 @@ var fashionBuilding = BABYLON.SceneLoader.Append("https://cdn.glitch.com/70dbad3
     var vidPos = (new BABYLON.Vector3(154.58, 19.9, -31.76));
     videoPlane.position = vidPos;
     var videoMat = new BABYLON.StandardMaterial("m", scene);
-    var videoTexture = new BABYLON.VideoTexture("vidtex","/images/https://cdn.glitch.com/70dbad3b-1f56-4b3f-96b7-05e0de0f2754%2Fb__dove.mp4?v=1617169848395", scene);
+    var videoTexture = new BABYLON.VideoTexture("vidtex","https://cdn.glitch.com/70dbad3b-1f56-4b3f-96b7-05e0de0f2754%2Fb__dove.mp4?v=1617169848395", scene);
     videoMat.diffuseTexture = videoTexture;
     videoMat.roughness = 1;
     videoMat.emissiveColor = new BABYLON.Color3.White();
@@ -960,7 +960,7 @@ actionManager.registerAction(
     function(event){
         var pickedMesh = event.meshUnderPointer; 
 
-        window.location.href = "/videoFashion.html";
+        window.location.href = "/withPeople/fashion.html";
     })
 )
 
