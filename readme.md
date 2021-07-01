@@ -1,7 +1,7 @@
 # ImmersiveMarket
 Immersive Market is a virtual 3d marketplace geared towards providing entrepreneurs and creators of color access to the benefits of AR/VR technology.
 
-You can run it on the netlify link attached. https://immersivemarket.netlify.app
+You can run it on the link attached. https://immersive-market.com/
 
 Recommendations for running:
 1. Use a device that has at least 8gb of RAM, but 16gb or more is recommended.
